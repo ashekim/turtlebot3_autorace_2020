@@ -26,56 +26,35 @@ from cv_bridge import CvBridge
 from sensor_msgs.msg import Image, CompressedImage
 from dynamic_reconfigure.server import Server
 
-class ImageCompensation():
+class ImagePublish():
     def __init__(self):
-        self.sub_image_type = "compressed"  # "compressed" / "raw"
-        self.pub_image_type = "raw"         # "compressed" / "raw"
+        self.image_pub = rospy.Publisher("image_topic_2",Image, queue_size = 1)
 
-        # # Create a VideoCapture object
-        # cap = cv2.VideoCapture(0)
-        # ret, cv_image_original = cap.read()
- 
-        # # # Check if camera opened successfully
-        # # if (cap.isOpened() == False): 
-        # #   print("Unable to read camera feed")
+        self.bridge = CvBridge()
+        self.image_sub = rospy.Subscriber("image_topic",Image,self.callback, queue_size = 1)
 
-        # # if ret == True: 
-     
-        # # Write the frame into the file 'output.avi'
-        # # out.write(frame)
+    def callback(self,data):
+        try:
+            cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+        except CvBridgeError as e:
+            print(e)
 
-        # # Display the resulting frame    
-        # # cv2.imshow('frame',frame)
-        # cv2.imwrite('test_py.jpg', cv_image_original)
+        (rows,cols,channels) = cv_image.shape
+        if cols > 60 and rows > 60 :
+            cv2.circle(cv_image, (50,50), 10, 255)
 
+        cv2.imshow("Image window", cv_image)
+        cv2.waitKey(3)
 
-        # subscribes raw image 
-        self.sub_image = rospy.Subscriber('/camera/image_output', Image, self.cbImageCompensation, queue_size = 1)
-
-        # # publishes compensated image in raw type
-        # self.pub_image = rospy.Publisher('/camera/image_output', Image, queue_size = 1)
-
-        self.cvBridge = CvBridge()
-
-    def cbImageCompensation(self, msg_img):
-        cv_image_compensated = np.copy(cv_image_original)
-
- 
-        # converts raw image to opencv image
-        cv_image_original = self.cvBridge.imgmsg_to_cv2(msg_img, "bgr8")
-        self.sub_image_original = rospy.Subscriber('/camera/image_input', Image, self.cbImageProjection, queue_size=1)
-        # if self.pub_image_type == "compressed":
-        #     # publishes compensated image in compressed type
-        #     self.pub_image.publish(self.cvBridge.cv2_to_compressed_imgmsg(cv_image_compensated, "jpg"))
-
-        # elif self.pub_image_type == "raw":
-        #     # publishes compensated image in raw type
-        #     self.pub_image.publish(self.cvBridge.cv2_to_imgmsg(cv_image_compensated, "bgr8"))
+        try:
+            self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
+        except CvBridgeError as e:
+            print(e)
 
     def main(self):
         rospy.spin()
 
 if __name__ == '__main__':
-    rospy.init_node('image_compensation_sub')
-    node = ImageCompensation()
+    rospy.init_node('sub_image')
+    node = ImagePublish()
     node.main()
