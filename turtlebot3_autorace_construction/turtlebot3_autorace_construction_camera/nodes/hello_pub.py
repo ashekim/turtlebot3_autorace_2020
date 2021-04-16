@@ -55,6 +55,6 @@ class ImagePublish():
         rospy.spin()
 
 if __name__ == '__main__':
-    rospy.init_node('sub_image')
+    rospy.init_node('pub_image')
     node = ImagePublish()
     node.main()
