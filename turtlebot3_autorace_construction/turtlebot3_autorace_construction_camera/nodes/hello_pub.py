@@ -26,31 +26,20 @@ from cv_bridge import CvBridge
 from sensor_msgs.msg import Image, CompressedImage
 from dynamic_reconfigure.server import Server
 
+
 class ImagePublish():
     def __init__(self):
-        self.image_pub = rospy.Publisher("image_topic_2",Image, queue_size = 1)
+        cap = cv2.VideoCapture(0)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH,  640)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        bridge = CvBridge()
+        image = cap.read()
+        # np_image = np.array(image)
 
-        self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber("image_topic",Image,self.callback, queue_size = 1)
-
-    def callback(self,data):
-        try:
-            cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
-        except CvBridgeError as e:
-            print(e)
-
-        (rows,cols,channels) = cv_image.shape
-        if cols > 60 and rows > 60 :
-            cv2.circle(cv_image, (50,50), 10, 255)
-
-        cv2.imshow("Image window", cv_image)
-        cv2.waitKey(3)
-
-        try:
-            self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
-        except CvBridgeError as e:
-            print(e)
-
+        self.image_message = bridge.cv2_to_imgmsg(image, "bgr8")
+        self.image_pub = rospy.Publisher("image_topic",Image, queue_size = 1)
+        self.image_pub.publish(image_message)
+      
     def main(self):
         rospy.spin()
 
