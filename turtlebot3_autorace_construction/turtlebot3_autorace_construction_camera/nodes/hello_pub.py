@@ -40,13 +40,13 @@ class ImagePublish():
         # Display the resulting frame    
         # cv2.imshow('frame',frame)
         cv2.imwrite('test_py.jpg', frame)
-        img = cv2.imread('test_py.jpg', cv2.IMREAD_COLOR)
+        img = cv2.imread('~/catkin_ws/test_py.jpg', cv2.IMREAD_COLOR)
      
 
         bridge = CvBridge()
-        self.image_message = bridge.cv2_to_imgmsg(img, "bgr8")
-        self.image_pub = rospy.Publisher("image_topic",Image, queue_size = 1)
-        self.image_pub.publish(image_message)
+        image_message = bridge.cv2_to_imgmsg(img, "bgr8")
+        image_pub = rospy.Publisher("image_topic",Image, queue_size = 1)
+        image_pub.publish(image_message)
       
     def main(self):
         rospy.spin()
