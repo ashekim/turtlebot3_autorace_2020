@@ -29,11 +29,11 @@ from dynamic_reconfigure.server import Server
 class ImagePublish():
     def __init__(self):
         self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber("image_topic",Image,self.callback, queue_size = 1)
+        self.image_sub = rospy.Subscriber("image_topic",CompressedImage,self.callback, queue_size = 1)
 
     def callback(self,data):
         try:
-            cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+            cv_image = self.bridge.cv2_to_compressed_imgmsg(data, "bgr8")
         except CvBridgeError as e:
             print(e)
 

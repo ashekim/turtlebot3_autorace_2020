@@ -30,10 +30,8 @@ from dynamic_reconfigure.server import Server
 class ImagePublish():
     def __init__(self):
         cap = cv2.VideoCapture(0)
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH,  640)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-        ret, frame = cap.read()
-       
+
+        ret, frame = cap.read()    
         # Write the frame into the file 'output.avi'
         # out.write(frame)
     
@@ -42,10 +40,9 @@ class ImagePublish():
         cv2.imwrite('test_py.jpg', frame)
         img = cv2.imread('~/catkin_ws/test_py.jpg', cv2.IMREAD_COLOR)
      
-
         bridge = CvBridge()
-        image_message = bridge.cv2_to_imgmsg(img, "bgr8")
-        image_pub = rospy.Publisher("image_topic",Image, queue_size = 1)
+        image_message = bridge.cv2_to_compressed_imgmsg(img, "bgr8")
+        image_pub = rospy.Publisher("image_topic",CompressedImage, queue_size = 1)
         image_pub.publish(image_message)
       
     def main(self):
