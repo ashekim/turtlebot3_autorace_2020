@@ -26,25 +26,38 @@ from cv_bridge import CvBridge
 from sensor_msgs.msg import Image, CompressedImage
 from dynamic_reconfigure.server import Server
 
+cap = cv2.VideoCapture(0)
+bridge = CvBridge()
 
 class ImagePublish():
     def __init__(self):
-        cap = cv2.VideoCapture(0)
 
-        ret, frame = cap.read()    
-        # Write the frame into the file 'output.avi'
-        # out.write(frame)
+        while(True):
+            ret, frame = cap.read()    
+            # Write the frame into the file 'output.avi'
+            # out.write(frame)
+        
+            if ret == True: 
+                # Display the resulting frame    
+                # cv2.imshow('frame',frame)
+                cv2.imwrite('test_py.jpg', frame)
+                img = cv2.imread('test_py.jpg', cv2.IMREAD_COLOR)
+                # print(img)
+                image_message = bridge.cv2_to_imgmsg(img, "bgr8")
+                image_pub = rospy.Publisher("image_topic",Image, queue_size = 1)
+                image_pub.publish(image_message)
+           
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+                # Break the loop
+            else:
+                break 
     
-        # Display the resulting frame    
-        # cv2.imshow('frame',frame)
-        cv2.imwrite('test_py.jpg', frame)
-        img = cv2.imread('~/catkin_ws/test_py.jpg', cv2.IMREAD_COLOR)
-     
-        bridge = CvBridge()
-        image_message = bridge.cv2_to_compressed_imgmsg(img, "bgr8")
-        image_pub = rospy.Publisher("image_topic",CompressedImage, queue_size = 1)
-        image_pub.publish(image_message)
-      
+        
+        
+        cap.release()
+        # out.release()
+
     def main(self):
         rospy.spin()
 
